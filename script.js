@@ -456,18 +456,103 @@ downloadTicketBtn.addEventListener("click", () => {
   }
 
   const lastReservation = reservations[reservations.length - 1];
+  const movie = getMovieById(lastReservation.movieId);
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  doc.setFontSize(18);
-  doc.text("Boleto de Cine", 20, 20);
-  doc.setFontSize(12);
-  doc.text(`Reserva: ${lastReservation.id}`, 20, 35);
-  doc.text(`Pelicula: ${lastReservation.movieTitle}`, 20, 45);
-  doc.text(`Horario: ${lastReservation.time}`, 20, 55);
-  doc.text(`Asientos: ${lastReservation.seats.join(", ")}`, 20, 65);
-  doc.text(`Total: ${formatGTQ(lastReservation.totalGTQ)} / ${formatUSD(lastReservation.totalUSD)}`, 20, 75);
-  doc.text(`Fecha: ${lastReservation.createdAt.toLocaleString()}`, 20, 85);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
+  const totalText = `${formatGTQ(lastReservation.totalGTQ)} / ${formatUSD(lastReservation.totalUSD)}`;
+  const seatsText = lastReservation.seats.join(", ");
+  const seatsLines = doc.splitTextToSize(seatsText, 78);
+  const createdAtText = new Date(lastReservation.createdAt).toLocaleString("es-GT");
+
+  // Encabezado del boleto
+  doc.setFillColor(12, 22, 48);
+  doc.setDrawColor(37, 56, 90);
+  doc.roundedRect(margin, 14, contentWidth, 34, 3, 3, "FD");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("SISTEMA DE RESERVA DE CINE", margin + 6, 24);
+  doc.setFontSize(22);
+  doc.text("E-TICKET", margin + 6, 36);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Codigo: ${lastReservation.id}`, pageWidth - margin - 50, 24);
+  doc.text("Valido para un ingreso", pageWidth - margin - 50, 31);
+  doc.text("Presentar en taquilla", pageWidth - margin - 50, 38);
+
+  // Cuerpo principal
+  doc.setTextColor(20, 24, 32);
+  doc.setFillColor(248, 249, 252);
+  doc.setDrawColor(224, 230, 240);
+  doc.roundedRect(margin, 54, contentWidth, 122, 3, 3, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("DETALLE DE RESERVA", margin + 6, 65);
+  doc.setDrawColor(210, 216, 228);
+  doc.line(margin + 6, 68, pageWidth - margin - 6, 68);
+
+  doc.setFontSize(10);
+  let y = 78;
+  const leftX = margin + 6;
+
+  const drawRow = (label, value) => {
+    doc.setFont("helvetica", "bold");
+    doc.text(`${label}:`, leftX, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(String(value), leftX + 24, y);
+    y += 9;
+  };
+
+  drawRow("Reserva", lastReservation.id);
+  drawRow("Fecha", createdAtText);
+  drawRow("Pelicula", lastReservation.movieTitle);
+  drawRow("Categoria", movie?.category || "General");
+  drawRow("Horario", lastReservation.time);
+  drawRow("Duracion", `${movie?.durationMin || "--"} min`);
+
+  // Panel de asientos y total
+  const panelX = pageWidth - margin - 84;
+  doc.setFillColor(235, 242, 255);
+  doc.setDrawColor(170, 192, 230);
+  doc.roundedRect(panelX, 76, 78, 86, 3, 3, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("ASIENTOS", panelX + 5, 85);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(seatsLines, panelX + 5, 93);
+
+  doc.setFillColor(23, 96, 70);
+  doc.roundedRect(panelX + 5, 138, 68, 18, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("TOTAL PAGADO", panelX + 9, 145);
+  doc.setFontSize(11);
+  doc.text(totalText, panelX + 9, 152);
+
+  // Pie y validacion
+  doc.setTextColor(70, 75, 86);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.text("Este boleto es personal e intransferible.", margin + 6, 188);
+  doc.text("Conservalo hasta finalizar la funcion.", margin + 6, 193);
+
+  doc.setDrawColor(130, 138, 156);
+  for (let x = margin; x < pageWidth - margin; x += 4) {
+    doc.line(x, 200, x + 2, 200);
+  }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(15, 23, 42);
+  doc.text("Control de acceso: " + lastReservation.id, margin + 6, 209);
+
   doc.save(`boleto-${lastReservation.id}.pdf`);
   setStatus(`Boleto ${lastReservation.id} generado en PDF.`, false);
 });
