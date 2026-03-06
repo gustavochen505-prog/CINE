@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Reserva de Cine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark">
+  <header class="topbar">
+    <h1>Sistema de Reserva de Cine</h1>
+    <div class="top-actions">
+      <button id="openSeatsModal" class="btn">Asientos</button>
+      <button id="openSummaryModal" class="btn">Resumen</button>
+      <button id="themeToggle" class="btn">Modo Claro</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel movies-panel">
+      <div id="movieRows" class="movie-rows"></div>
+    </section>
+  </main>
+
+  <div id="seatsModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-box panel">
+      <div class="modal-head">
+        <h2>Selecciona tus asientos</h2>
+        <button id="closeSeatsModal" class="btn">Cerrar</button>
+      </div>
+      <div class="seat-map-rect">
+        <p class="screen-bar">SCREEN</p>
+        <div id="seatsGrid" class="seats-grid-rect"></div>
+      </div>
+      <div class="legend">
+        <span><i class="seat available"></i> Disponible</span>
+        <span><i class="seat selected"></i> Seleccionado</span>
+        <span><i class="seat reserved"></i> Reservado</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="summaryModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-box panel">
+      <div class="modal-head">
+        <h2>Resumen</h2>
+        <button id="closeSummaryModal" class="btn">Cerrar</button>
+      </div>
+      <div id="selectedMovieInfo" class="movie-info"></div>
+      <p><strong>Asientos:</strong> <span id="selectedSeatsText">Ninguno</span></p>
+      <p><strong>Total:</strong> <span id="totalGTQ">Q0.00</span> / <span id="totalUSD">$0.00</span></p>
+
+      <h3>Pagos</h3>
+      <form id="paymentForm" class="payment-form" novalidate>
+        <label>Nombre titular
+          <input type="text" id="cardName" />
+        </label>
+        <label>Numero de tarjeta
+          <input type="text" id="cardNumber" maxlength="19" placeholder="1234 5678 9012 3456" />
+        </label>
+        <div class="row">
+          <label>Vence
+            <input type="text" id="cardExp" maxlength="5" placeholder="MM/AA" />
+          </label>
+          <label>CVV
+            <input type="password" id="cardCvv" maxlength="4" />
+          </label>
+        </div>
+        <button type="submit" class="btn primary">Pagar y Reservar</button>
+      </form>
+
+      <div class="actions">
+        <button id="cancelReservation" class="btn danger">Cancelar Reserva</button>
+        <button id="downloadTicket" class="btn success">Generar Boleto PDF</button>
+      </div>
+      <p id="statusMessage" class="status"></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
